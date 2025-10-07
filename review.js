@@ -67,7 +67,10 @@ auth.onAuthStateChanged(user => {
 // 🔹 Gửi đánh giá mới
 // ========================
 document.getElementById("submitReview").addEventListener("click", () => {
-  const name = document.getElementById("reviewerName").value.trim();
+   
+    console.log("🟢 Nút gửi được bấm");
+
+    const name = document.getElementById("reviewerName").value.trim();
   const content = document.getElementById("reviewContent").value.trim();
 
   if (!name || !content || selectedRating === 0) {
