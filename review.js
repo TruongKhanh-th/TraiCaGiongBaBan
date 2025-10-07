@@ -65,10 +65,13 @@ document.getElementById("ratingRange").addEventListener("input", (e) => {
 // 🔹 Gửi đánh giá
 // ========================
 document.getElementById("submitReview").addEventListener("click", () => {
+  console.log("🟢 Nút gửi được bấm");
+  alert("Sự kiện click đã hoạt động!");
+});
+
+document.getElementById("submitReview").addEventListener("click", () => {
   const name = document.getElementById("reviewerName").value.trim();
   const content = document.getElementById("reviewContent").value.trim();
-
-  console.log("🟢 Nút gửi được bấm");
 
   if (!name || !content) {
     alert("Vui lòng nhập tên và nội dung đánh giá!");
