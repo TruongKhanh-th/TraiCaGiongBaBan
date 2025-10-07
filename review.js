@@ -1,7 +1,3 @@
-document.addEventListener("DOMContentLoaded", () => {
-
-  console.log("✅ HTML đã load xong, JS bắt đầu chạy");
-
 // ========================
 // 🔹 Cấu hình Firebase
 // ========================
@@ -90,10 +86,9 @@ document.getElementById("submitReview").addEventListener("click", () => {
   };
 
   db.ref(`reviews/${fishName}`).push(review);
-  document.getElementById("reviewerName").value = "";
-  document.getElementById("reviewContent").value = "";
-  stars.forEach(s => s.classList.remove("selected"));
-  selectedRating = 0;
+    document.getElementById("ratingRange").value = 5;
+    document.getElementById("ratingValue").textContent = "5";
+    selectedRating = 5;
 });
 
 // ========================
@@ -197,5 +192,3 @@ function renderReviews(data) {
 }
 
 db.ref(`reviews/${fishName}`).on("value", snapshot => renderReviews(snapshot.val()));
-
-});
