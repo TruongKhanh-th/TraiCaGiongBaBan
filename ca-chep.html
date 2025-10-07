@@ -22,32 +22,31 @@
 
   <hr>
 
-  <!-- 🔸 Khu vực đánh giá -->
-  <h2>Đánh giá sản phẩm</h2>
-  <div class="rating-summary">
-    ⭐ Điểm trung bình: <span id="avgRating">0</span>/5 (<span id="totalReviews">0</span> đánh giá)
-  </div>
+ <!-- 🔸 Khu vực đánh giá -->
+<h2>Đánh giá sản phẩm</h2>
+<div class="rating-summary">
+  ⭐ Điểm trung bình: <span id="avgRating">0</span>/10 
+  (<span id="totalReviews">0</span> đánh giá)
+</div>
 
-  <div id="stars">
-    <span class="star" data-value="1">★</span>
-    <span class="star" data-value="2">★</span>
-    <span class="star" data-value="3">★</span>
-    <span class="star" data-value="4">★</span>
-    <span class="star" data-value="5">★</span>
-  </div>
+<label for="ratingRange">Chọn điểm (1–10):</label>
+<input type="range" id="ratingRange" min="1" max="10" value="5" step="1" 
+       oninput="document.getElementById('ratingValue').textContent = this.value;">
+<span id="ratingValue">5</span>
 
-  <input type="text" id="reviewerName" placeholder="Nhập tên của bạn">
-  <textarea id="reviewContent" placeholder="Viết đánh giá của bạn..."></textarea>
-  <button id="submitReview">Gửi đánh giá</button>
+<input type="text" id="reviewerName" placeholder="Nhập tên của bạn">
+<textarea id="reviewContent" placeholder="Viết đánh giá của bạn..."></textarea>
+<button id="submitReview">Gửi đánh giá</button>
 
-  <div id="reviewList"></div>
+<div id="reviewList"></div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
 
-  <!-- File xử lý đánh giá -->
-  <script src="js/review.js"></script>
+<!-- File xử lý đánh giá -->
+<script src="js/review.js"></script>
+
 </body>
 </html>
