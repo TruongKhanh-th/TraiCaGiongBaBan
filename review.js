@@ -1,3 +1,7 @@
+document.addEventListener("DOMContentLoaded", () => {
+
+  console.log("✅ HTML đã load xong, JS bắt đầu chạy");
+
 // ========================
 // 🔹 Cấu hình Firebase
 // ========================
@@ -193,3 +197,5 @@ function renderReviews(data) {
 }
 
 db.ref(`reviews/${fishName}`).on("value", snapshot => renderReviews(snapshot.val()));
+
+});
