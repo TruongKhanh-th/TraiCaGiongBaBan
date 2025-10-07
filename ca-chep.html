@@ -151,7 +151,10 @@ const app = firebase.initializeApp(firebaseConfig);
     }
 
     db.ref('reviews/' + fishKey).on('value', snapshot => renderReviews(snapshot.val()));
+  
   </script>
+   <!-- JS xử lý đánh giá -->
+  <script src="js/review.js"></script>
 </body>
 
 <h2>Đánh giá sản phẩm</h2>
@@ -167,8 +170,6 @@ const app = firebase.initializeApp(firebaseConfig);
   </div>
 
 
-
-  
   <input type="text" id="username" placeholder="Nhập tên của bạn">
   <textarea id="reviewText" placeholder="Viết đánh giá của bạn..."></textarea>
   <button class="btn" onclick="submitReview()">Gửi đánh giá</button>
