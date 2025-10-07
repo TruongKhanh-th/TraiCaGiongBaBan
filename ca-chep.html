@@ -14,19 +14,167 @@
   </style>
 </head>
 <body>
+   <a href="index.html" class="btn back">⬅ Trở lại</a>
   <h1>🐟 Cá Chép</h1>
   <p>
     Cá chép là loại cá nước ngọt phổ biến, dễ nuôi và có giá trị kinh tế cao.
     Ngoài ra, cá chép còn thường được chọn để phóng sanh trong các dịp lễ.
+
   </p>
 
+  <a href="tel:0909123456" class="btn contact">📞 Liên hệ</a>
   <div class="gallery">
     <img src="images/ca-chep-1.jpg" alt="Cá chép 1">
     <img src="images/ca-chep-2.jpg" alt="Cá chép 2">
     <img src="images/ca-chep-3.jpg" alt="Cá chép 3">
   </div>
 
-  <a href="index.html" class="btn back">⬅ Trở lại</a>
-  <a href="tel:0909123456" class="btn contact">📞 Liên hệ</a>
 </body>
+
+<h2>Đánh giá sản phẩm</h2>
+<div class="rating-summary">
+    ⭐ Điểm trung bình: <span id="avgRating">0</span>/5 (<span id="totalReviews">0</span> đánh giá)
+  </div>
+  <div id="stars">
+    <span class="star" data-value="1">★</span>
+    <span class="star" data-value="2">★</span>
+    <span class="star" data-value="3">★</span>
+    <span class="star" data-value="4">★</span>
+    <span class="star" data-value="5">★</span>
+  </div>
+
+  <input type="text" id="username" placeholder="Nhập tên của bạn">
+  <textarea id="reviewText" placeholder="Viết đánh giá của bạn..."></textarea>
+  <button class="btn" onclick="submitReview()">Gửi đánh giá</button>
+
+  <div class="review-section">
+    <h3>💬 Các đánh giá gần đây:</h3>
+    <div id="reviewsList"></div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
+
+  <script>
+    // ⚙️ Dán đoạn config Firebase của bạn vào đây
+    // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyACK383pbLnLA1refbDu6XQ4Dp_SqdHGW8",
+  authDomain: "traicababan.firebaseapp.com",
+  projectId: "traicababan",
+  storageBucket: "traicababan.firebasestorage.app",
+  messagingSenderId: "168039844429",
+  appId: "1:168039844429:web:9f709934c6e6ad25d22a04",
+  measurementId: "G-WE9MJJBPJW"
+};
+
+const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database(app);
+    const fishKey = "ca-chep";
+
+    const stars = document.querySelectorAll('.star');
+    let selectedRating = 0;
+
+    stars.forEach(star => {
+      star.addEventListener('click', () => {
+        selectedRating = parseInt(star.dataset.value);
+        stars.forEach(s => s.classList.remove('selected'));
+        for (let i = 0; i < selectedRating; i++) stars[i].classList.add('selected');
+      });
+    });
+
+    function submitReview() {
+      const name = document.getElementById('username').value.trim();
+      const text = document.getElementById('reviewText').value.trim();
+      if (!name || !text || selectedRating === 0) {
+        alert('Vui lòng nhập đầy đủ tên, nội dung và chọn số sao!');
+        return;
+      }
+
+      const review = { name, text, rating: selectedRating, timestamp: new Date().toISOString() };
+      db.ref('reviews/' + fishKey).push(review);
+      document.getElementById('username').value = '';
+      document.getElementById('reviewText').value = '';
+      stars.forEach(s => s.classList.remove('selected'));
+      selectedRating = 0;
+    }
+
+    function addReply(reviewId) {
+      const replyName = prompt("Nhập tên của bạn:");
+      if (!replyName) return;
+      const replyText = prompt("Nhập nội dung trả lời:");
+      if (!replyText) return;
+      const reply = { name: replyName, text: replyText, timestamp: new Date().toISOString() };
+      db.ref(`reviews/${fishKey}/${reviewId}/replies`).push(reply);
+    }
+
+    function deleteReview(reviewId) {
+      if (confirm("Bạn có chắc muốn xóa đánh giá này?")) {
+        db.ref(`reviews/${fishKey}/${reviewId}`).remove();
+      }
+    }
+
+    function deleteReply(reviewId, replyId) {
+      if (confirm("Bạn có chắc muốn xóa trả lời này?")) {
+        db.ref(`reviews/${fishKey}/${reviewId}/replies/${replyId}`).remove();
+      }
+    }
+
+    function renderReviews(data) {
+      const list = document.getElementById('reviewsList');
+      list.innerHTML = '';
+      let total = 0, count = 0;
+
+      if (!data) {
+        list.innerHTML = '<p>Chưa có đánh giá nào.</p>';
+        document.getElementById('avgRating').textContent = 0;
+        document.getElementById('totalReviews').textContent = 0;
+        return;
+      }
+
+      const reviews = Object.entries(data).reverse();
+      reviews.forEach(([id, r]) => {
+        total += r.rating;
+        count++;
+        const div = document.createElement('div');
+        div.className = 'review';
+        div.innerHTML = `
+          <strong>${r.name}</strong> - ${'★'.repeat(r.rating)}<br>
+          ${r.text}<br><small>${new Date(r.timestamp).toLocaleString()}</small><br>
+          <button class="btn reply" onclick="addReply('${id}')">Trả lời</button>
+          <button class="btn delete" onclick="deleteReview('${id}')">Xóa</button>
+        `;
+
+        if (r.replies) {
+          const replies = Object.entries(r.replies);
+          replies.forEach(([rid, rep]) => {
+            const repDiv = document.createElement('div');
+            repDiv.className = 'reply';
+            repDiv.innerHTML = `
+              <strong>${rep.name}:</strong> ${rep.text} <br>
+              <small>${new Date(rep.timestamp).toLocaleString()}</small>
+              <br><button class="btn delete" style="background:#b32d2e; padding:4px 6px;" onclick="deleteReply('${id}','${rid}')">Xóa</button>
+            `;
+            div.appendChild(repDiv);
+          });
+        }
+        list.appendChild(div);
+      });
+
+      const avg = (total / count).toFixed(1);
+      document.getElementById('avgRating').textContent = avg;
+      document.getElementById('totalReviews').textContent = count;
+    }
+
+    db.ref('reviews/' + fishKey).on('value', snapshot => renderReviews(snapshot.val()));
+  </script>
+  </script>
 </html>
