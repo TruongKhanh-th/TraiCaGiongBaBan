@@ -84,7 +84,7 @@ document.getElementById("submitReview").addEventListener("click", () => {
 
   console.log("📨 Gửi lên Firebase:", review);
 
-  console.log("🐟 fishName:", fishName).push(review)
+  db.ref(`review/${fishName}`).push(review)
     .then(() => {
       console.log("✅ Đã lưu thành công");
       document.getElementById("reviewerName").value = "";
