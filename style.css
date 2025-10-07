@@ -42,3 +42,12 @@ footer {
   padding: 10px;
   margin-top: 20px;
 }
+
+.star {
+  font-size: 24px;
+  cursor: pointer;
+  color: #ccc;
+}
+.star.selected {
+  color: gold;
+}
