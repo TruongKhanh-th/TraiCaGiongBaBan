@@ -14,6 +14,11 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const auth = firebase.auth();
+const provider = new firebase.auth.GoogleAuthProvider();
+
+// ID Google admin (tài khoản của bạn)
+const ADMIN_EMAIL = "your.email@gmail.com"; // 👉 đổi thành email Google của bạn
 
 // ========================
 // 🔹 Lấy tên cá theo tiêu đề trang
@@ -26,49 +31,73 @@ const fishName = document.title.trim().toLowerCase().replace(/\s+/g, "-");
 const stars = document.querySelectorAll(".star");
 let selectedRating = 0;
 
-if (stars.length) {
-  stars.forEach(star => {
-    star.addEventListener("click", () => {
-      selectedRating = parseInt(star.dataset.value);
-      stars.forEach(s => s.classList.remove("selected"));
-      for (let i = 0; i < selectedRating; i++) {
-        stars[i].classList.add("selected");
-      }
-    });
+stars.forEach(star => {
+  star.addEventListener("click", () => {
+    selectedRating = parseInt(star.dataset.value);
+    stars.forEach(s => s.classList.remove("selected"));
+    for (let i = 0; i < selectedRating; i++) {
+      stars[i].classList.add("selected");
+    }
   });
-}
+});
+
+// ========================
+// 🔹 Đăng nhập / Đăng xuất Google
+// ========================
+const loginBtn = document.createElement("button");
+loginBtn.className = "btn";
+loginBtn.textContent = "🔑 Đăng nhập Google";
+loginBtn.style.margin = "10px 0";
+document.body.insertBefore(loginBtn, document.body.firstChild);
+
+let currentUser = null;
+
+loginBtn.addEventListener("click", () => {
+  if (currentUser) {
+    auth.signOut();
+  } else {
+    auth.signInWithPopup(provider);
+  }
+});
+
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  if (user) {
+    loginBtn.textContent = `👋 ${user.displayName} (Đăng xuất)`;
+  } else {
+    loginBtn.textContent = "🔑 Đăng nhập Google";
+  }
+  renderReviews(lastReviewsData);
+});
 
 // ========================
 // 🔹 Gửi đánh giá mới
 // ========================
-const submitBtn = document.getElementById("submitReview");
-if (submitBtn) {
-  submitBtn.addEventListener("click", () => {
-    const name = document.getElementById("reviewerName").value.trim();
-    const content = document.getElementById("reviewContent").value.trim();
+document.getElementById("submitReview").addEventListener("click", () => {
+  const name = document.getElementById("reviewerName").value.trim();
+  const content = document.getElementById("reviewContent").value.trim();
 
-    if (!name || !content || selectedRating === 0) {
-      alert("Vui lòng chọn số sao, nhập tên và nội dung đánh giá!");
-      return;
-    }
+  if (!name || !content || selectedRating === 0) {
+    alert("Vui lòng chọn số sao, nhập tên và nội dung đánh giá!");
+    return;
+  }
 
-    const review = {
-      name,
-      content,
-      rating: selectedRating,
-      timestamp: new Date().toISOString(),
-    };
+  const review = {
+    name,
+    content,
+    rating: selectedRating,
+    timestamp: new Date().toISOString(),
+  };
 
-    db.ref(`reviews/${fishName}`).push(review);
-    document.getElementById("reviewerName").value = "";
-    document.getElementById("reviewContent").value = "";
-    stars.forEach(s => s.classList.remove("selected"));
-    selectedRating = 0;
-  });
-}
+  db.ref(`reviews/${fishName}`).push(review);
+  document.getElementById("reviewerName").value = "";
+  document.getElementById("reviewContent").value = "";
+  stars.forEach(s => s.classList.remove("selected"));
+  selectedRating = 0;
+});
 
 // ========================
-// 🔹 Trả lời & Xóa đánh giá
+// 🔹 Trả lời & Xóa đánh giá (chỉ admin)
 // ========================
 function replyReview(reviewId) {
   const replyName = prompt("Nhập tên của bạn:");
@@ -85,12 +114,20 @@ function replyReview(reviewId) {
 }
 
 function deleteReview(reviewId) {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
+    alert("Chỉ admin mới có thể xóa đánh giá!");
+    return;
+  }
   if (confirm("Bạn có chắc muốn xóa đánh giá này?")) {
     db.ref(`reviews/${fishName}/${reviewId}`).remove();
   }
 }
 
 function deleteReply(reviewId, replyId) {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
+    alert("Chỉ admin mới có thể xóa phản hồi!");
+    return;
+  }
   if (confirm("Bạn có chắc muốn xóa phản hồi này?")) {
     db.ref(`reviews/${fishName}/${reviewId}/replies/${replyId}`).remove();
   }
@@ -102,9 +139,10 @@ function deleteReply(reviewId, replyId) {
 const listContainer = document.getElementById("reviewList");
 const avgRating = document.getElementById("avgRating");
 const totalReviews = document.getElementById("totalReviews");
+let lastReviewsData = null;
 
-db.ref(`reviews/${fishName}`).on("value", (snapshot) => {
-  const data = snapshot.val();
+function renderReviews(data) {
+  lastReviewsData = data;
   listContainer.innerHTML = "";
   let total = 0;
   let count = 0;
@@ -128,10 +166,9 @@ db.ref(`reviews/${fishName}`).on("value", (snapshot) => {
       ${r.content}<br>
       <small>${new Date(r.timestamp).toLocaleString()}</small><br>
       <button class="btn" style="background:#666;" onclick="replyReview('${id}')">Trả lời</button>
-      <button class="btn btn-delete" onclick="deleteReview('${id}')">Xóa</button>
+      ${currentUser && currentUser.email === ADMIN_EMAIL ? `<button class="btn btn-delete" onclick="deleteReview('${id}')">Xóa</button>` : ""}
     `;
 
-    // hiển thị các phản hồi
     if (r.replies) {
       const replies = Object.entries(r.replies);
       replies.forEach(([rid, rep]) => {
@@ -144,7 +181,7 @@ db.ref(`reviews/${fishName}`).on("value", (snapshot) => {
         repDiv.innerHTML = `
           <strong>${rep.name}:</strong> ${rep.text}<br>
           <small>${new Date(rep.timestamp).toLocaleString()}</small><br>
-          <button class="btn btn-delete" style="background:#b32d2e;padding:3px 6px;" onclick="deleteReply('${id}','${rid}')">Xóa</button>
+          ${currentUser && currentUser.email === ADMIN_EMAIL ? `<button class="btn btn-delete" style="background:#b32d2e;padding:3px 6px;" onclick="deleteReply('${id}','${rid}')">Xóa</button>` : ""}
         `;
         div.appendChild(repDiv);
       });
@@ -156,4 +193,6 @@ db.ref(`reviews/${fishName}`).on("value", (snapshot) => {
   const avg = (total / count).toFixed(1);
   if (avgRating) avgRating.textContent = avg;
   if (totalReviews) totalReviews.textContent = count;
-});
+}
+
+db.ref(`reviews/${fishName}`).on("value", snapshot => renderReviews(snapshot.val()));
