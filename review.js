@@ -17,13 +17,15 @@ const db = firebase.database();
 const auth = firebase.auth();
 const provider = new firebase.auth.GoogleAuthProvider();
 
-// 👉 Thay bằng email Google của bạn (admin)
-const ADMIN_EMAIL = "truongquockhanh8526@gmail.com";
+// 👉 Email admin
+const ADMIN_EMAIL = "truongquockahnh8526@gmail.com";
 
 // ========================
-// 🔹 Tên cá theo tiêu đề trang
+// 🔹 Lấy tên cá theo tiêu đề
 // ========================
-const fishName = document.title.trim().toLowerCase().replace(/\s+/g, "-");
+const fishName = document.title
+  .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  .toLowerCase().replace(/\s+/g, "-");
 
 // ========================
 // 🔹 Đăng nhập / Đăng xuất Google
@@ -38,20 +40,15 @@ let currentUser = null;
 let lastReviewsData = null;
 
 loginBtn.addEventListener("click", () => {
-  if (currentUser) {
-    auth.signOut();
-  } else {
-    auth.signInWithPopup(provider);
-  }
+  if (currentUser) auth.signOut();
+  else auth.signInWithPopup(provider);
 });
 
 auth.onAuthStateChanged(user => {
   currentUser = user;
-  if (user) {
-    loginBtn.textContent = `👋 ${user.displayName} (Đăng xuất)`;
-  } else {
-    loginBtn.textContent = "🔑 Đăng nhập Google";
-  }
+  loginBtn.textContent = user
+    ? `👋 ${user.displayName} (Đăng xuất)`
+    : "🔑 Đăng nhập Google";
   renderReviews(lastReviewsData);
 });
 
@@ -85,14 +82,18 @@ document.getElementById("submitReview").addEventListener("click", () => {
     timestamp: new Date().toISOString(),
   };
 
-  db.ref(`reviews/${fishName}`).push(review);
+  console.log("📨 Gửi lên Firebase:", review);
 
-  // Reset form sau khi gửi
-  document.getElementById("reviewerName").value = "";
-  document.getElementById("reviewContent").value = "";
-  document.getElementById("ratingRange").value = 5;
-  document.getElementById("ratingValue").textContent = "5";
-  selectedRating = 5;
+  db.ref(`reviews/${fishName}`).push(review)
+    .then(() => {
+      console.log("✅ Đã lưu thành công");
+      document.getElementById("reviewerName").value = "";
+      document.getElementById("reviewContent").value = "";
+      document.getElementById("ratingRange").value = 5;
+      document.getElementById("ratingValue").textContent = "5";
+      selectedRating = 5;
+    })
+    .catch(err => console.error("❌ Lỗi khi lưu:", err));
 });
 
 // ========================
@@ -142,8 +143,7 @@ const totalReviews = document.getElementById("totalReviews");
 function renderReviews(data) {
   lastReviewsData = data;
   listContainer.innerHTML = "";
-  let total = 0;
-  let count = 0;
+  let total = 0, count = 0;
 
   if (!data) {
     listContainer.innerHTML = "<p>Chưa có đánh giá nào.</p>";
@@ -168,8 +168,7 @@ function renderReviews(data) {
     `;
 
     if (r.replies) {
-      const replies = Object.entries(r.replies);
-      replies.forEach(([rid, rep]) => {
+      Object.entries(r.replies).forEach(([rid, rep]) => {
         const repDiv = document.createElement("div");
         repDiv.className = "reply";
         repDiv.style.marginLeft = "20px";
@@ -188,8 +187,7 @@ function renderReviews(data) {
     listContainer.appendChild(div);
   });
 
-  const avg = (total / count).toFixed(1);
-  avgRating.textContent = avg;
+  avgRating.textContent = (total / count).toFixed(1);
   totalReviews.textContent = count;
 }
 
