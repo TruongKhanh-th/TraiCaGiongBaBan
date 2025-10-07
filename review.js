@@ -23,9 +23,7 @@ const ADMIN_EMAIL = "truongquockahnh8526@gmail.com";
 // ========================
 // 🔹 Lấy tên cá theo tiêu đề
 // ========================
-const fishName = document.title
-  .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-  .toLowerCase().replace(/\s+/g, "-");
+const fishName = "ca-chep";
 
 // ========================
 // 🔹 Đăng nhập / Đăng xuất Google
@@ -66,10 +64,7 @@ document.getElementById("ratingRange").addEventListener("input", (e) => {
 // ========================
 document.getElementById("submitReview").addEventListener("click", () => {
   console.log("🟢 Nút gửi được bấm");
-  alert("Sự kiện click đã hoạt động!");
-});
 
-document.getElementById("submitReview").addEventListener("click", () => {
   const name = document.getElementById("reviewerName").value.trim();
   const content = document.getElementById("reviewContent").value.trim();
 
