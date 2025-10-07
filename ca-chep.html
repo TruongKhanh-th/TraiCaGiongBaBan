@@ -28,31 +28,7 @@
     <img src="images/ca-chep-2.jpg" alt="Cá chép 2">
     <img src="images/ca-chep-3.jpg" alt="Cá chép 3">
   </div>
-
-</body>
-
-<h2>Đánh giá sản phẩm</h2>
-<div class="rating-summary">
-    ⭐ Điểm trung bình: <span id="avgRating">0</span>/5 (<span id="totalReviews">0</span> đánh giá)
-  </div>
-  <div id="stars">
-    <span class="star" data-value="1">★</span>
-    <span class="star" data-value="2">★</span>
-    <span class="star" data-value="3">★</span>
-    <span class="star" data-value="4">★</span>
-    <span class="star" data-value="5">★</span>
-  </div>
-
-  <input type="text" id="username" placeholder="Nhập tên của bạn">
-  <textarea id="reviewText" placeholder="Viết đánh giá của bạn..."></textarea>
-  <button class="btn" onclick="submitReview()">Gửi đánh giá</button>
-
-  <div class="review-section">
-    <h3>💬 Các đánh giá gần đây:</h3>
-    <div id="reviewsList"></div>
-  </div>
-
-  <!-- Firebase SDK -->
+ <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
 
@@ -176,5 +152,32 @@ const app = firebase.initializeApp(firebaseConfig);
 
     db.ref('reviews/' + fishKey).on('value', snapshot => renderReviews(snapshot.val()));
   </script>
+</body>
+
+<h2>Đánh giá sản phẩm</h2>
+<div class="rating-summary">
+    ⭐ Điểm trung bình: <span id="avgRating">0</span>/5 (<span id="totalReviews">0</span> đánh giá)
+  </div>
+  <div id="stars">
+    <span class="star" data-value="1">★</span>
+    <span class="star" data-value="2">★</span>
+    <span class="star" data-value="3">★</span>
+    <span class="star" data-value="4">★</span>
+    <span class="star" data-value="5">★</span>
+  </div>
+
+
+
+  
+  <input type="text" id="username" placeholder="Nhập tên của bạn">
+  <textarea id="reviewText" placeholder="Viết đánh giá của bạn..."></textarea>
+  <button class="btn" onclick="submitReview()">Gửi đánh giá</button>
+
+  <div class="review-section">
+    <h3>💬 Các đánh giá gần đây:</h3>
+    <div id="reviewsList"></div>
+  </div>
+
+ 
   </script>
 </html>
