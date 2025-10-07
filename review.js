@@ -18,7 +18,7 @@ const auth = firebase.auth();
 const provider = new firebase.auth.GoogleAuthProvider();
 
 // ID Google admin (tài khoản của bạn)
-const ADMIN_EMAIL = "your.email@gmail.com"; // 👉 đổi thành email Google của bạn
+const ADMIN_EMAIL = "truongquockhanh8526@gmail.com"; // 👉 đổi thành email Google của bạn
 
 // ========================
 // 🔹 Lấy tên cá theo tiêu đề trang
@@ -26,19 +26,12 @@ const ADMIN_EMAIL = "your.email@gmail.com"; // 👉 đổi thành email Google c
 const fishName = document.title.trim().toLowerCase().replace(/\s+/g, "-");
 
 // ========================
-// 🔹 Xử lý chọn sao
+// 🔹 Lấy điểm đánh giá từ thanh kéo
 // ========================
-const stars = document.querySelectorAll(".star");
-let selectedRating = 0;
+let selectedRating = parseInt(document.getElementById("ratingRange").value);
 
-stars.forEach(star => {
-  star.addEventListener("click", () => {
-    selectedRating = parseInt(star.dataset.value);
-    stars.forEach(s => s.classList.remove("selected"));
-    for (let i = 0; i < selectedRating; i++) {
-      stars[i].classList.add("selected");
-    }
-  });
+document.getElementById("ratingRange").addEventListener("input", (e) => {
+  selectedRating = parseInt(e.target.value);
 });
 
 // ========================
@@ -162,7 +155,8 @@ function renderReviews(data) {
     const div = document.createElement("div");
     div.className = "review-item";
     div.innerHTML = `
-      <strong>${r.name}</strong> - ${"★".repeat(r.rating)}<br>
+      <strong>${r.name}</strong> - Điểm: <b>${r.rating}/10</b><br>
+
       ${r.content}<br>
       <small>${new Date(r.timestamp).toLocaleString()}</small><br>
       <button class="btn" style="background:#666;" onclick="replyReview('${id}')">Trả lời</button>
