@@ -17,22 +17,13 @@ const db = firebase.database();
 const auth = firebase.auth();
 const provider = new firebase.auth.GoogleAuthProvider();
 
-// ID Google admin (tài khoản của bạn)
-const ADMIN_EMAIL = "truongquockhanh8526@gmail.com"; // 👉 đổi thành email Google của bạn
+// 👉 Thay bằng email Google của bạn (admin)
+const ADMIN_EMAIL = "truongquockhanh8526@gmail.com";
 
 // ========================
-// 🔹 Lấy tên cá theo tiêu đề trang
+// 🔹 Tên cá theo tiêu đề trang
 // ========================
 const fishName = document.title.trim().toLowerCase().replace(/\s+/g, "-");
-
-// ========================
-// 🔹 Lấy điểm đánh giá từ thanh kéo
-// ========================
-let selectedRating = parseInt(document.getElementById("ratingRange").value);
-
-document.getElementById("ratingRange").addEventListener("input", (e) => {
-  selectedRating = parseInt(e.target.value);
-});
 
 // ========================
 // 🔹 Đăng nhập / Đăng xuất Google
@@ -44,6 +35,7 @@ loginBtn.style.margin = "10px 0";
 document.body.insertBefore(loginBtn, document.body.firstChild);
 
 let currentUser = null;
+let lastReviewsData = null;
 
 loginBtn.addEventListener("click", () => {
   if (currentUser) {
@@ -64,17 +56,25 @@ auth.onAuthStateChanged(user => {
 });
 
 // ========================
-// 🔹 Gửi đánh giá mới
+// 🔹 Lấy điểm từ thanh kéo
+// ========================
+let selectedRating = parseInt(document.getElementById("ratingRange").value);
+document.getElementById("ratingRange").addEventListener("input", (e) => {
+  selectedRating = parseInt(e.target.value);
+  document.getElementById("ratingValue").textContent = selectedRating;
+});
+
+// ========================
+// 🔹 Gửi đánh giá
 // ========================
 document.getElementById("submitReview").addEventListener("click", () => {
-   
-    console.log("🟢 Nút gửi được bấm");
-
-    const name = document.getElementById("reviewerName").value.trim();
+  const name = document.getElementById("reviewerName").value.trim();
   const content = document.getElementById("reviewContent").value.trim();
 
-  if (!name || !content || selectedRating === 0) {
-    alert("Vui lòng chọn số sao, nhập tên và nội dung đánh giá!");
+  console.log("🟢 Nút gửi được bấm");
+
+  if (!name || !content) {
+    alert("Vui lòng nhập tên và nội dung đánh giá!");
     return;
   }
 
@@ -86,13 +86,17 @@ document.getElementById("submitReview").addEventListener("click", () => {
   };
 
   db.ref(`reviews/${fishName}`).push(review);
-    document.getElementById("ratingRange").value = 5;
-    document.getElementById("ratingValue").textContent = "5";
-    selectedRating = 5;
+
+  // Reset form sau khi gửi
+  document.getElementById("reviewerName").value = "";
+  document.getElementById("reviewContent").value = "";
+  document.getElementById("ratingRange").value = 5;
+  document.getElementById("ratingValue").textContent = "5";
+  selectedRating = 5;
 });
 
 // ========================
-// 🔹 Trả lời & Xóa đánh giá (chỉ admin)
+// 🔹 Trả lời & Xóa đánh giá
 // ========================
 function replyReview(reviewId) {
   const replyName = prompt("Nhập tên của bạn:");
@@ -134,7 +138,6 @@ function deleteReply(reviewId, replyId) {
 const listContainer = document.getElementById("reviewList");
 const avgRating = document.getElementById("avgRating");
 const totalReviews = document.getElementById("totalReviews");
-let lastReviewsData = null;
 
 function renderReviews(data) {
   lastReviewsData = data;
@@ -144,8 +147,8 @@ function renderReviews(data) {
 
   if (!data) {
     listContainer.innerHTML = "<p>Chưa có đánh giá nào.</p>";
-    if (avgRating) avgRating.textContent = "0";
-    if (totalReviews) totalReviews.textContent = "0";
+    avgRating.textContent = "0";
+    totalReviews.textContent = "0";
     return;
   }
 
@@ -158,7 +161,6 @@ function renderReviews(data) {
     div.className = "review-item";
     div.innerHTML = `
       <strong>${r.name}</strong> - Điểm: <b>${r.rating}/10</b><br>
-
       ${r.content}<br>
       <small>${new Date(r.timestamp).toLocaleString()}</small><br>
       <button class="btn" style="background:#666;" onclick="replyReview('${id}')">Trả lời</button>
@@ -187,8 +189,8 @@ function renderReviews(data) {
   });
 
   const avg = (total / count).toFixed(1);
-  if (avgRating) avgRating.textContent = avg;
-  if (totalReviews) totalReviews.textContent = count;
+  avgRating.textContent = avg;
+  totalReviews.textContent = count;
 }
 
 db.ref(`reviews/${fishName}`).on("value", snapshot => renderReviews(snapshot.val()));
